@@ -1,92 +1,96 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../service/api";
 
 function Register() {
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-    role: "PATIENT",
-  });
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ username: "", password: "", role: "PATIENT" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (error) setError("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
       await API.post("/auth/register", form);
-      alert("Registration Successful");
-    } catch (error) {
-      alert("Registration Failed");
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow-lg w-96"
-      >
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Register
-        </h1>
-
-        {/* Username Input */}
-        <input
-          type="text"
-          placeholder="Username"
-          value={form.username}
-          className="w-full border p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              username: e.target.value,
-            })
-          }
-          required
-        />
-
-        {/* Password Input */}
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          className="w-full border p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(e) =>
-            setForm({
-              ...form,
-              password: e.target.value,
-            })
-          }
-          required
-        />
-
-        {/* Role Selection Dropdown */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Register As:
-          </label>
-          <select
-            value={form.role}
-            className="w-full border p-3 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(e) =>
-              setForm({
-                ...form,
-                role: e.target.value,
-              })
-            }
-          >
-            <option value="PATIENT">Patient</option>
-            <option value="DOCTOR">Doctor</option>
-            <option value="ADMIN">Admin</option>
-          </select>
+    <div className="auth-bg">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <div className="auth-logo-icon">🏥</div>
+          <span className="auth-logo-text">MediCore</span>
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded font-semibold hover:bg-blue-700 transition duration-200"
-        >
-          Sign Up
-        </button>
-      </form>
+        <h1 className="auth-title">Create account</h1>
+        <p className="auth-subtitle">Join the hospital management system</p>
+
+        {error && <div className="alert alert-error">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Username</label>
+            <input
+              type="text"
+              name="username"
+              className="form-input"
+              placeholder="Choose a username"
+              value={form.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              className="form-input"
+              placeholder="Create a password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Role</label>
+            <select
+              name="role"
+              className="form-input form-select"
+              value={form.role}
+              onChange={handleChange}
+            >
+              <option value="PATIENT">Patient</option>
+              <option value="DOCTOR">Doctor</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Creating account…" : "Create account"}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          Already have an account? <Link to="/">Sign in</Link>
+        </div>
+      </div>
     </div>
   );
 }

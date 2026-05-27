@@ -1,114 +1,83 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../service/api";
 
 function Login() {
-
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
-
     const { name, value } = e.target;
-
-    setForm({
-      ...form,
-      [name]: value,
-    });
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-
     setLoading(true);
-
+    setError("");
     try {
-
-      const response = await API.post(
-        "/auth/login",
-        {
-          username: form.username,
-          password: form.password,
-        }
-      );
-
-      console.log(response.data);
-
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
-
-      alert("Login Successful");
-
+      const response = await API.post("/auth/login", form);
+      localStorage.setItem("token", response.data.token);
       navigate("/dashboard");
-
-    } catch (error) {
-
-      console.log(error);
-
-      alert("Invalid Credentials");
-
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid username or password.");
     } finally {
-
       setLoading(false);
     }
   };
 
   return (
+    <div className="auth-bg">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <div className="auth-logo-icon">🏥</div>
+          <span className="auth-logo-text">MediCore</span>
+        </div>
 
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <h1 className="auth-title">Welcome back</h1>
+        <p className="auth-subtitle">Sign in to your hospital portal</p>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow-lg w-96"
-      >
+        {error && <div className="alert alert-error">{error}</div>}
 
-        <h1 className="text-5xl font-bold mb-8 text-center">
-          Login
-        </h1>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Username</label>
+            <input
+              type="text"
+              name="username"
+              className="form-input"
+              placeholder="Enter your username"
+              value={form.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={form.username}
-          onChange={handleChange}
-          className="w-full border p-3 rounded mb-4"
-          required
-        />
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              className="form-input"
+              placeholder="Enter your password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full border p-3 rounded mb-4"
-          required
-        />
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700"
-        >
-
-          {loading
-            ? "Logging in..."
-            : "Login"}
-
-        </button>
-
-      </form>
-
+        <div className="auth-footer">
+          Don't have an account? <Link to="/register">Register</Link>
+        </div>
+      </div>
     </div>
   );
 }
