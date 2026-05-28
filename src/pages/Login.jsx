@@ -14,20 +14,50 @@ function Login() {
     if (error) setError("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const response = await API.post("/auth/login", form);
-      localStorage.setItem("token", response.data.token);
+ const handleSubmit = async (e) => {
+
+  e.preventDefault();
+
+  setLoading(true);
+
+  setError("");
+
+  try {
+
+    const response = await API.post(
+      "/auth/login",
+      form
+    );
+
+    console.log(response.data);
+
+    if (response.data.token) {
+
+      localStorage.setItem(
+        "token",
+        response.data.token
+      );
+
       navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Invalid username or password.");
-    } finally {
-      setLoading(false);
+
+    } else {
+
+      setError("Invalid username or password.");
     }
-  };
+
+  } catch (err) {
+
+    console.log(err);
+
+    setError(
+      "Invalid username or password."
+    );
+
+  } finally {
+
+    setLoading(false);
+  }
+};
 
   return (
     <div className="auth-bg">

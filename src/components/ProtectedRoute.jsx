@@ -2,11 +2,9 @@ import { Navigate, Outlet } from "react-router-dom";
 
 function ProtectedRoute({ allowedRoles }) {
   const token = localStorage.getItem("token");
-
-  // Not logged in — redirect to login
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
+if (!token) {
+  return <Navigate to="/" replace />;
+}
 
   // Role-based check
   if (allowedRoles && allowedRoles.length > 0) {
